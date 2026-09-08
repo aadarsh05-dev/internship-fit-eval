@@ -42,11 +42,14 @@ structurally cannot capture. See **Limitations**.
 ## Run it
 
 ```
-python eval.py
+python eval.py         # print the report, refresh results/
+python -m unittest     # baseline regression tests
 ```
 
-No dependencies. Standard library only, Python 3.8+. Prints the summary table,
-plus confusion matrices and full disagreement lists for v1 and v3.
+No dependencies. Standard library only, Python 3.8+. `eval.py` prints the summary
+table plus confusion matrices and disagreement lists for v1 and v3, and writes
+`results/summary.md` and `results/disagreements.md` (both committed, so a rubric
+change shows up as a diff).
 
 ## Repo layout
 
