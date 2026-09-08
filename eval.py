@@ -132,44 +132,66 @@ def v3(company, title, degrees):
     return "no"
 
 
+CLASSES = ("fit", "maybe", "no")
+RUBRICS = {"v1": v1, "v2": v2, "v3": v3}
+
+
+def load_rows(path=CORPUS):
+    """The labeled benchmark rows (postings with a non-blank label)."""
+    with open(path, encoding="utf-8") as f:
+        return [r for r in csv.DictReader(f) if r["label"].strip()]
+
+
+def score(fn, rows):
+    """Run one rubric over the rows.
+
+    Returns (exact_matches, confusion_counter, disagreements) where the
+    confusion counter is keyed (human_label, predicted_label).
+    """
+    cm = collections.Counter()
+    diffs = []
+    exact = 0
+    for r in rows:
+        human = r["label"].strip().lower()
+        pred = fn(r["company"], r["role"], r["degrees"])
+        cm[(human, pred)] += 1
+        if human == pred:
+            exact += 1
+        else:
+            diffs.append((r["id"], r["company"], r["role"], human, pred))
+    return exact, cm, diffs
+
+
+def prf(cm, label):
+    """Precision, recall, F1 for one class, from a (human, pred) confusion counter."""
+    tp = cm[(label, label)]
+    fp = sum(cm[(h, label)] for h in CLASSES if h != label)
+    fn = sum(cm[(label, p)] for p in CLASSES if p != label)
+    prec = tp / (tp + fp) if tp + fp else 0.0
+    rec = tp / (tp + fn) if tp + fn else 0.0
+    f1 = 2 * prec * rec / (prec + rec) if prec + rec else 0.0
+    return prec, rec, f1
+
+
 def main():
-    rows = [r for r in csv.DictReader(open(CORPUS, encoding="utf-8")) if r["label"].strip()]
+    rows = load_rows()
     n = len(rows)
-    cls = ["fit", "maybe", "no"]
 
     print(f"corpus: {n} labeled postings\n")
     print(f"{'version':<8}{'exact':>12}{'fit precision':>16}{'fit recall':>13}{'fit F1':>9}")
     results = {}
-    for name, fn in [("v1", v1), ("v2", v2), ("v3", v3)]:
-        exact = tp = fp = fn_ = 0
-        cm = collections.Counter()
-        diffs = []
-        for r in rows:
-            human = r["label"].strip().lower()
-            pred = fn(r["company"], r["role"], r["degrees"])
-            cm[(human, pred)] += 1
-            if human == pred:
-                exact += 1
-            else:
-                diffs.append((r["id"], r["company"], r["role"], human, pred))
-            if pred == "fit" and human == "fit":
-                tp += 1
-            elif pred == "fit":
-                fp += 1
-            elif human == "fit":
-                fn_ += 1
-        prec = tp / (tp + fp) if tp + fp else 0
-        rec = tp / (tp + fn_) if tp + fn_ else 0
-        f1 = 2 * prec * rec / (prec + rec) if prec + rec else 0
+    for name, fn in RUBRICS.items():
+        exact, cm, diffs = score(fn, rows)
+        prec, rec, f1 = prf(cm, "fit")
         results[name] = (exact, cm, diffs)
         print(f"{name:<8}{exact}/{n} = {exact / n:>5.0%}{prec:>15.0%}{rec:>13.0%}{f1:>9.2f}")
 
     for name in ("v1", "v3"):
         exact, cm, diffs = results[name]
         print(f"\n--- {name} confusion matrix (rows = human label, cols = rubric) ---")
-        print("           " + "".join(f"{x:>8}" for x in cls))
-        for h in cls:
-            print(f"  {h:>7}  " + "".join(f"{cm[(h, x)]:>8}" for x in cls))
+        print("           " + "".join(f"{x:>8}" for x in CLASSES))
+        for h in CLASSES:
+            print(f"  {h:>7}  " + "".join(f"{cm[(h, x)]:>8}" for x in CLASSES))
         print(f"{name} disagreements:")
         for cid, co, ro, h, p in diffs:
             print(f"  #{cid:>2}  {co[:22]:<22} {ro[:44]:<44} human={h:<5} rubric={p}")
