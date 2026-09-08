@@ -43,8 +43,12 @@ structurally cannot capture. See **Limitations**.
 
 ```
 python eval.py         # print the report, refresh results/
+python eval.py --check  # same, but exit non-zero if v3 agreement < 78%
 python -m unittest     # baseline regression tests
 ```
+
+`--check` is the regression gate: it fails a build if a change to the rubric or
+the scorer drops v3 below the threshold (`--min-agreement` to adjust).
 
 No dependencies. Standard library only, Python 3.8+. `eval.py` prints the summary
 table plus confusion matrices and disagreement lists for v1 and v3, and writes

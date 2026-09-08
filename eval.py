@@ -25,12 +25,16 @@ Three rubric versions are run together to show the tuning loop:
 
 Usage:  python eval.py
 """
+import argparse
 import csv
 import collections
 import os
+import sys
 
 CORPUS = "data/postings.csv"
 RESULTS_DIR = "results"
+GATE_VERSION = "v3"          # the current rubric; the one the gate watches
+DEFAULT_MIN_AGREEMENT = 0.78  # published v3 baseline is 0.82
 
 CONSULTING = {
     "mckinsey", "bain", "boston consulting", "bcg", "deloitte", "pwc",
@@ -233,7 +237,7 @@ def write_results(results, n, outdir=RESULTS_DIR):
         f.write("\n".join(detail) + "\n")
 
 
-def main():
+def main(check=False, min_agreement=DEFAULT_MIN_AGREEMENT):
     rows = load_rows()
     n = len(rows)
 
@@ -259,6 +263,31 @@ def main():
     write_results(results, n)
     print(f"\nwrote {RESULTS_DIR}/summary.md and {RESULTS_DIR}/disagreements.md")
 
+    if check:
+        exact = results[GATE_VERSION][0]
+        rate = exact / n
+        if rate < min_agreement:
+            print(
+                f"\nFAIL: {GATE_VERSION} agreement {rate:.0%} "
+                f"below the {min_agreement:.0%} gate"
+            )
+            return 1
+        print(
+            f"\nOK: {GATE_VERSION} agreement {rate:.0%} "
+            f"meets the {min_agreement:.0%} gate"
+        )
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[1])
+    ap.add_argument(
+        "--check", action="store_true",
+        help=f"exit non-zero if {GATE_VERSION} agreement falls below --min-agreement",
+    )
+    ap.add_argument(
+        "--min-agreement", type=float, default=DEFAULT_MIN_AGREEMENT,
+        help=f"gate threshold for --check (default {DEFAULT_MIN_AGREEMENT})",
+    )
+    args = ap.parse_args()
+    sys.exit(main(check=args.check, min_agreement=args.min_agreement))

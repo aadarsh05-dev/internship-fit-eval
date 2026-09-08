@@ -47,6 +47,8 @@ and is evaluated against this same labeled set.
 
 Changes to the tooling around the rubric, newest first.
 
+- `--check` mode: `python eval.py --check` exits non-zero if v3 agreement drops
+  below `--min-agreement` (default 0.78). A regression gate for rubric edits.
 - `eval.py` writes `results/summary.md` and `results/disagreements.md` on each
   run, and both are committed, so a rubric change is a reviewable diff.
 - Macro-averaged F1 across all three classes added to the summary table

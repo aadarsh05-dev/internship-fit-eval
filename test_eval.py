@@ -6,7 +6,9 @@ that moves them has to be deliberate. Standard library only:
 
     python -m unittest -v
 """
+import contextlib
 import csv
+import io
 import unittest
 
 import eval as E
@@ -84,6 +86,21 @@ class RubricRules(unittest.TestCase):
             first = [fn(r["company"], r["role"], r["degrees"]) for r in ROWS]
             second = [fn(r["company"], r["role"], r["degrees"]) for r in ROWS]
             self.assertEqual(first, second)
+
+
+class Gate(unittest.TestCase):
+    def _run(self, **kw):
+        with contextlib.redirect_stdout(io.StringIO()):
+            return E.main(**kw)
+
+    def test_passes_at_published_baseline(self):
+        self.assertEqual(self._run(check=True, min_agreement=0.78), 0)
+
+    def test_fails_when_threshold_above_current(self):
+        self.assertEqual(self._run(check=True, min_agreement=0.90), 1)
+
+    def test_no_check_always_zero(self):
+        self.assertEqual(self._run(check=False), 0)
 
 
 if __name__ == "__main__":
