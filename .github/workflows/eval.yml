@@ -1,0 +1,26 @@
+name: eval
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Unit tests
+        run: python -m unittest -v
+
+      - name: Regression gate (v3 agreement must hold >= 78%)
+        run: python eval.py --check
+
+      - name: Fail if results/ is stale
+        run: |
+          git diff --exit-code results/ \
+            || (echo "results/ is out of date; run 'python eval.py' and commit" && exit 1)

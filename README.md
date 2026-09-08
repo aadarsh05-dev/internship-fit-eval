@@ -1,5 +1,7 @@
 # Internship-Fit Eval
 
+[![eval](https://github.com/aadarsh05-dev/internship-fit-eval/actions/workflows/eval.yml/badge.svg)](https://github.com/aadarsh05-dev/internship-fit-eval/actions/workflows/eval.yml)
+
 A small evaluation harness for an LLM-style classifier: a rubric that scores
 internship postings **fit / maybe / no** for one candidate persona. The rubric
 started as a few paragraphs of written criteria inside a personal job-search
@@ -48,7 +50,9 @@ python -m unittest     # baseline regression tests
 ```
 
 `--check` is the regression gate: it fails a build if a change to the rubric or
-the scorer drops v3 below the threshold (`--min-agreement` to adjust).
+the scorer drops v3 below the threshold (`--min-agreement` to adjust). GitHub
+Actions runs the tests and the gate on every push, and also fails if `results/`
+was not regenerated.
 
 No dependencies. Standard library only, Python 3.8+. `eval.py` prints the summary
 table plus confusion matrices and disagreement lists for v1 and v3, and writes

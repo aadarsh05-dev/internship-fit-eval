@@ -47,6 +47,9 @@ and is evaluated against this same labeled set.
 
 Changes to the tooling around the rubric, newest first.
 
+- GitHub Actions (`.github/workflows/eval.yml`) runs the unit tests and
+  `eval.py --check` on every push and pull request, and fails if `results/` is
+  stale.
 - `--check` mode: `python eval.py --check` exits non-zero if v3 agreement drops
   below `--min-agreement` (default 0.78). A regression gate for rubric edits.
 - `eval.py` writes `results/summary.md` and `results/disagreements.md` on each
