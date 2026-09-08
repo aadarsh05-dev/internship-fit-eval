@@ -44,6 +44,13 @@ class Benchmark(unittest.TestCase):
         self.assertLess(a1, a2)
         self.assertLess(a2, a3)
 
+    def test_macro_f1_moves_with_the_rubric(self):
+        rows = E.load_rows()
+        m1 = E.macro_f1(E.score(E.v1, rows)[1])
+        m3 = E.macro_f1(E.score(E.v3, rows)[1])
+        self.assertAlmostEqual(m1, 0.36, places=2)
+        self.assertAlmostEqual(m3, 0.79, places=2)
+
 
 class RubricRules(unittest.TestCase):
     def test_degree_gate_rejects_non_bachelors(self):

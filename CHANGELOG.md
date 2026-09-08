@@ -45,5 +45,13 @@ and is evaluated against this same labeled set.
 
 ## Harness
 
-Changes to the tooling around the rubric, newest first. _(none yet beyond the
-initial `eval.py`)_
+Changes to the tooling around the rubric, newest first.
+
+- Macro-averaged F1 across all three classes added to the summary table
+  (v1 0.36, v2 0.59, v3 0.79). The fit-only F1 hides that v1 never predicts
+  `maybe`; the macro number does not.
+- Scoring and metrics factored into importable functions (`load_rows`, `score`,
+  `prf`).
+- `unittest` suite (`test_eval.py`) locks the v1 / v2 / v3 baseline numbers and
+  covers the degree gate, the data-title and AI-engineering rules, v3's
+  lower-profile downgrade, and determinism.

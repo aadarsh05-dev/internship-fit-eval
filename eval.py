@@ -173,18 +173,28 @@ def prf(cm, label):
     return prec, rec, f1
 
 
+def macro_f1(cm):
+    """Unweighted mean F1 across all three classes.
+
+    Exact-match agreement and the fit-class F1 both hide how a version does on
+    `maybe` and `no`. v1 for example never predicts `maybe` at all, which
+    macro F1 exposes where the fit-only number does not.
+    """
+    return sum(prf(cm, c)[2] for c in CLASSES) / len(CLASSES)
+
+
 def main():
     rows = load_rows()
     n = len(rows)
 
     print(f"corpus: {n} labeled postings\n")
-    print(f"{'version':<8}{'exact':>12}{'fit precision':>16}{'fit recall':>13}{'fit F1':>9}")
+    print(f"{'version':<8}{'exact':>12}{'fit precision':>16}{'fit recall':>13}{'fit F1':>9}{'macro F1':>10}")
     results = {}
     for name, fn in RUBRICS.items():
         exact, cm, diffs = score(fn, rows)
         prec, rec, f1 = prf(cm, "fit")
         results[name] = (exact, cm, diffs)
-        print(f"{name:<8}{exact}/{n} = {exact / n:>5.0%}{prec:>15.0%}{rec:>13.0%}{f1:>9.2f}")
+        print(f"{name:<8}{exact}/{n} = {exact / n:>5.0%}{prec:>15.0%}{rec:>13.0%}{f1:>9.2f}{macro_f1(cm):>10.2f}")
 
     for name in ("v1", "v3"):
         exact, cm, diffs = results[name]
